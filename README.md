@@ -6,4 +6,6 @@ I kind of wanted to make a gameboy emulator, so I'm just doing this first to get
 Using this bad boy: https://en.wikipedia.org/wiki/CHIP-8 as a reference
 
 Here's what it looks like:
+
+
 ![Tetris Screenshot](img/1551995644904177940.png?raw=true "Tetris")
