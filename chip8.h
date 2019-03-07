@@ -5,7 +5,7 @@ class chip8 {
 
 		bool drawFlag;
 
-		bool loadGame(char* game);
+		bool loadGame(const char* game);
 		void emulateCycle();
 		void debugRender();
 
