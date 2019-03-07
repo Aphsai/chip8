@@ -1,5 +1,5 @@
 #OBJS specifies which files to compile as part of the project 
-OBJS = main.cpp #CC specifies which compiler we're using 
+OBJS = main.cpp chip8.cpp chip8.h #CC specifies which compiler we're using 
 CC = g++ #COMPILER_FLAGS specifies the additional compilation options we're using 
 # -w suppresses all warnings 
 COMPILER_FLAGS = -w 

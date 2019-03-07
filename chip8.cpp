@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <cstring>
 
 unsigned char chip8_fontset[80] =
 { 
@@ -54,7 +55,7 @@ void chip8::emulateCycle() {
 
 }
 
-bool chip8::loadProgram(char* game) {
+bool chip8::loadGame(char* game) {
 	initialize();
 	printf("Loading... %s\n", game);
 	FILE * pFile = fopen(game, "rb");
@@ -160,7 +161,7 @@ void chip8::decode(unsigned short opcode) {
 				}
 				break;
 				case 0x0005: {
-					V[0xF] = (V[(opcode >> 4) & 0x000F] > V[(opcode >> 4) & 0x000F])
+					V[0xF] = (V[(opcode >> 4) & 0x000F] > V[(opcode >> 4) & 0x000F]);
 					V[(opcode >> 8) & 0x000F] -= V[(opcode >> 4) & 0x000F];	
 					pc += 2;
 				}
@@ -172,7 +173,7 @@ void chip8::decode(unsigned short opcode) {
 				}
 				break;
 				case 0x0007: {
-					V[0xF] = (V[(opcode >> 4) & 0x000F] > V[(opcode >> 4) & 0x000F])
+					V[0xF] = (V[(opcode >> 4) & 0x000F] > V[(opcode >> 4) & 0x000F]);
 					V[(opcode >> 8) & 0x000F] = V[(opcode >> 4) & 0x000F] - V[(opcode >> 8) & 0x000F];
 					pc += 2;
 				}
@@ -197,7 +198,7 @@ void chip8::decode(unsigned short opcode) {
 			V[(opcode >> 8) & 0x000F] = (opcode & 0x00FF) & (rand() % 0xFF);
 			pc += 2;
 		break;
-		case 0xD000:
+		case 0xD000: {
 			unsigned short x = V[(opcode >> 8) & 0x000F];
 			unsigned short y = V[(opcode >> 4) & 0x000F];
 			unsigned short N = opcode & 0x000F;
@@ -213,6 +214,7 @@ void chip8::decode(unsigned short opcode) {
 			}
 			drawFlag = true;
 			pc += 2;
+	    	}
 		break;
 		case 0xE000:
 			switch (opcode & 0x000F) {
@@ -230,13 +232,14 @@ void chip8::decode(unsigned short opcode) {
 					V[(opcode >> 8) & 0x000F] = delay_timer;
 					pc += 2;
 				break;
-				case 0x000A:
-					bool keyPress = false;
-					for (int x = 0; x 16; x++) {
+				case 0x000A: {
+					bool keypress = false;
+					for (int x = 0; x < 16; x++) {
 						if (!keypress)
 							keypress = V[(opcode >> 8) & 0x000F] = key[x];
 					}
 					pc += 2 * keypress;
+				}
 				break;
 				case 0x0015:
 					delay_timer = V[(opcode >> 8) & 0x000F];
@@ -263,7 +266,7 @@ void chip8::decode(unsigned short opcode) {
 				break;
 				case 0x0055:
 					for (int x = 0; x < (opcode >> 8) & 0x000F + 1; x++) {
-						memory[I + x] = V[i];
+						memory[I + x] = V[x];
 					}
 					I += (opcode >> 8) & 0x000F + 1;
 					pc += 2;
@@ -279,7 +282,6 @@ void chip8::decode(unsigned short opcode) {
 		break;
 		default:
 			printf("Uknown opcode.\n");
-		}
 	}
 }
 	
