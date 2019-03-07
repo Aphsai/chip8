@@ -12,7 +12,7 @@ int modifier = 10;
 int display_width = SCREEN_WIDTH * modifier;
 int display_height = SCREEN_HEIGHT * modifier;
 
-void handleInput(SDL_Event event) {
+bool handleInput(SDL_Event event) {
 	int k = -1;
 	if (event.type == SDL_KEYDOWN) {
 		switch (event.key.keysym.sym) {
@@ -32,6 +32,7 @@ void handleInput(SDL_Event event) {
 		case SDLK_r: k = 13; break;
 		case SDLK_f: k = 14; break;
 		case SDLK_v: k = 15; break;
+		case SDLK_ESCAPE: return false; break;
 		default: break;
 		}
 		if (k != -1) {
@@ -61,6 +62,7 @@ void handleInput(SDL_Event event) {
 			myChip8.key[k] = 0;
 		}
 	}
+	return true;
 }
 
 void clearScreen(SDL_Renderer *renderer) {
@@ -80,22 +82,22 @@ void drawPixel(int x, int y, SDL_Renderer *renderer) {
 	SDL_RenderFillRect(renderer, &r);
 }
 void gameLoop(SDL_Renderer *renderer) {
+	SDL_Event e;
 	while(true) {
 		myChip8.emulateCycle();
 		if (myChip8.drawFlag) {
 			clearScreen(renderer);
-			myChip8.debugRender();
 			for (int x = 0; x < 2048; x++) {
 				if (myChip8.gfx[x]) {
 					drawPixel(x % 64, x / 64, renderer);
 				}
 			}
 			SDL_RenderPresent(renderer);
-			SDL_Event event;
-			SDL_PollEvent(&event);
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) break;
 			myChip8.drawFlag = false;
 		}
+		SDL_PollEvent(&e);
+		if(!handleInput(e)) break;;
+		SDL_Delay(10);
 
 	}
 }

@@ -50,7 +50,6 @@ void chip8::initialize() {
 
 void chip8::emulateCycle() {
 	opcode = memory[pc] << 8 | memory[pc + 1];
-	printf("%X\n", opcode);
 	if (!decode(opcode)) return;
 	if (delay_timer > 0) delay_timer--;
 	if (sound_timer == 1) printf("BEEP.\n");
