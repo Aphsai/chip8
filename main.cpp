@@ -68,8 +68,9 @@ void clearScreen(SDL_Renderer *renderer) {
 	SDL_RenderClear(renderer);
 }
 
-void drawPixel(int x, int y, int c, SDL_Renderer *renderer) {
+void drawPixel(int x, int y, SDL_Renderer *renderer) {
  	SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+	printf("%d %d\n", x, y);
 	SDL_Rect r = {
 		x * modifier,
 		y * modifier,
@@ -79,9 +80,6 @@ void drawPixel(int x, int y, int c, SDL_Renderer *renderer) {
 	SDL_RenderFillRect(renderer, &r);
 }
 void gameLoop(SDL_Renderer *renderer) {
-	int fps = 60;
-	bool quit = false;
-	SDL_Event e;
 	while(true) {
 		myChip8.emulateCycle();
 		if (myChip8.drawFlag) {
@@ -89,14 +87,16 @@ void gameLoop(SDL_Renderer *renderer) {
 			myChip8.debugRender();
 			for (int x = 0; x < 2048; x++) {
 				if (myChip8.gfx[x]) {
-					drawPixel(x % 64, x / 64, 255, renderer);
+					drawPixel(x % 64, x / 64, renderer);
 				}
 			}
 			SDL_RenderPresent(renderer);
+			SDL_Event event;
+			SDL_PollEvent(&event);
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) break;
 			myChip8.drawFlag = false;
 		}
-		SDL_PollEvent(&e);
-		if (e.type == SDL_KEYDOWN) break;
+
 	}
 }
 

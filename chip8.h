@@ -26,5 +26,5 @@ class chip8 {
 		unsigned short sp; // stack pointer
 
 		void initialize();
-		void decode(unsigned short opcode);
+		bool decode(unsigned short opcode);
 };
