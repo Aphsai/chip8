@@ -24,7 +24,7 @@ unsigned char chip8_fontset[80] =
 };
 
 chip8::chip8() {}
-chip8::~chip*() {}
+chip8::~chip8() {}
 void chip8::initialize() {
 	I = 0;
 	pc = 0x200;

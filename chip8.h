@@ -1,8 +1,3 @@
-#pragma once
-
-#ifndef chip8
-#define chip8
-
 class chip8 {
 	public:
 		chip8();
@@ -11,6 +6,7 @@ class chip8 {
 		bool drawFlag;
 
 		bool loadGame(char* game);
+		void emulateCycle();
 
 		unsigned char key[16]; // keypad
 		unsigned char gfx[64 * 32]; // Graphics display
@@ -29,5 +25,4 @@ class chip8 {
 		unsigned short sp; // stack pointer
 
 		void initialize();
-}
-#endif
+};
