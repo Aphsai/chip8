@@ -7,6 +7,7 @@ class chip8 {
 
 		bool loadGame(char* game);
 		void emulateCycle();
+		void debugRender();
 
 		unsigned char key[16]; // keypad
 		unsigned char gfx[64 * 32]; // Graphics display

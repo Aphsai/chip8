@@ -63,14 +63,40 @@ void handleInput(SDL_Event event) {
 	}
 }
 
+void clearScreen(SDL_Renderer *renderer) {
+	SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+	SDL_RenderClear(renderer);
+}
+
+void drawPixel(int x, int y, int c, SDL_Renderer *renderer) {
+ 	SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+	SDL_Rect r = {
+		x * modifier,
+		y * modifier,
+		modifier,
+		modifier,
+	};
+	SDL_RenderFillRect(renderer, &r);
+}
 void gameLoop(SDL_Renderer *renderer) {
 	int fps = 60;
 	bool quit = false;
-	myChip8.emulateCycle();
-
-	if (myChip8.drawFlag) {
-
-		myChip8.drawFlag = false;
+	SDL_Event e;
+	while(true) {
+		myChip8.emulateCycle();
+		if (myChip8.drawFlag) {
+			clearScreen(renderer);
+			myChip8.debugRender();
+			for (int x = 0; x < 2048; x++) {
+				if (myChip8.gfx[x]) {
+					drawPixel(x % 64, x / 64, 255, renderer);
+				}
+			}
+			SDL_RenderPresent(renderer);
+			myChip8.drawFlag = false;
+		}
+		SDL_PollEvent(&e);
+		if (e.type == SDL_KEYDOWN) break;
 	}
 }
 
@@ -89,9 +115,9 @@ int main(int argc, char **argv) {
    	 } else {
 		SDL_CreateWindowAndRenderer(display_width, display_height, 0, &window, &renderer); 
 	 }
-
 	gameLoop(renderer);
 	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
 	SDL_Quit();
 	return 0;
 }

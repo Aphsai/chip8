@@ -31,9 +31,11 @@ void chip8::initialize() {
 	pc = 0x200;
 	sp = 0;
 	opcode = 0;
+
 	memset(memory, 0, sizeof(memory));
 	memset(V, 0, sizeof(V));
 	memset(key, 0, sizeof(key));
+	memset(gfx, 0, sizeof(gfx));
 
 	for (int i = 0; i < 80; ++i) {
 		memory[i] = chip8_fontset[i];
@@ -95,19 +97,18 @@ bool chip8::loadGame(char* game) {
 void chip8::decode(unsigned short opcode) {
 	switch(opcode & 0xF000) {
 		case 0x0000:
-			switch (opcode & 0x00FF) {
-				case 0x00E0:
+			switch (opcode & 0x000F) {
+				case 0x000E:
 					pc = stack[--sp];
 					pc += 2;
 				break;
-				case 0x00EE:
+				case 0x0000:
 					memset(gfx, 0, sizeof(gfx));
 					drawFlag = true;
 					pc += 2;
 				break;
 				default:
-					printf("Uknown opcode: %X\n", opcode);
-				break;
+					printf("Uknown opcode: 0x%X\n", opcode);
 			} 
 		break;
 		case 0x1000:
@@ -118,13 +119,13 @@ void chip8::decode(unsigned short opcode) {
 			pc = opcode & 0x0FFF;
 		break;
 		case 0x3000:
-			pc = pc + 2 + 2 * (V[(opcode >> 8) & 0x000F] == opcode & 0x00FF);
+			pc += 2 + 2 * (V[(opcode >> 8) & 0x000F] == opcode & 0x00FF);
 		break;
 		case 0x4000:
-			pc = pc + 2 + 2 * (V[(opcode >> 8) & 0x000F] != opcode & 0x00FF);
+			pc += 2 + 2 * (V[(opcode >> 8) & 0x000F] != opcode & 0x00FF);
 		break;
 		case 0x5000:
-			pc = pc + 2 + 2 * (V[(opcode >> 8) & 0x000F] == V[(opcode >> 4) & 0x000F]);
+			pc += 2 + 2 * (V[(opcode >> 8) & 0x000F] == V[(opcode >> 4) & 0x000F]);
 		break;
 		case 0x6000:
 			V[(opcode >> 8) & 0x000F] = opcode & 0x00FF;
@@ -153,39 +154,41 @@ void chip8::decode(unsigned short opcode) {
 					pc += 2;
 				break;
 				case 0x0004: {
+					V[0xF] = (V[(opcode >> 8) & 0x000F] + V[(opcode >> 4) & 0x000F] > 0xFF);
 					V[(opcode >> 8) & 0x000F] += V[(opcode >> 4) & 0x000F];	
-					V[0xFF] = !!(V[(opcode >> 8) & 0x000F] % 0xFF);
-					V[(opcode >> 8) & 0x000F] %= 0xFF;
 					pc += 2;
 
 				}
 				break;
 				case 0x0005: {
-					V[0xF] = (V[(opcode >> 4) & 0x000F] > V[(opcode >> 4) & 0x000F]);
+					V[0xF] = (V[(opcode >> 4) & 0x000F] < V[(opcode >> 4) & 0x000F]);
 					V[(opcode >> 8) & 0x000F] -= V[(opcode >> 4) & 0x000F];	
 					pc += 2;
 				}
 				break;
 				case 0x0006: {
-					V[0xF] = V[(opcode >> 8) & 0x000F] & 1;
+					V[0xF] = V[(opcode >> 8) & 0x000F] & 0x1;
 					V[(opcode >> 8) & 0x000F] >>= 1;
 					pc += 2;
 				}
 				break;
 				case 0x0007: {
-					V[0xF] = (V[(opcode >> 4) & 0x000F] > V[(opcode >> 4) & 0x000F]);
+					V[0xF] = (V[(opcode >> 4) & 0x000F] < V[(opcode >> 4) & 0x000F]);
 					V[(opcode >> 8) & 0x000F] = V[(opcode >> 4) & 0x000F] - V[(opcode >> 8) & 0x000F];
 					pc += 2;
 				}
 				break;
 				case 0x000E:
+					V[0xF] = V[(opcode >> 8) & 0x000F] >> 7;
 					V[(opcode >> 8) & 0x000F] <<= 1;
 					pc += 2;
 				break;
+				default:
+					printf("Uknown opcode 8~ %X\n", opcode);
 			}
 		break;
 		case 0x9000:
-			pc = pc + 2 + 2 * (V[(opcode >> 8) & 0x000F] == V[(opcode >> 4) & 0x000F]);
+			pc += 2 + 2 * (V[(opcode >> 8) & 0x000F] != V[(opcode >> 4) & 0x000F]);
 		break;
 		case 0xA000:
 			I = opcode & 0x0FFF;
@@ -219,10 +222,10 @@ void chip8::decode(unsigned short opcode) {
 		case 0xE000:
 			switch (opcode & 0x000F) {
 				case 0x000E:
-					pc = pc + 2 + 2 * (key[V[(opcode >> 8) & 0x000F]]);
+					pc += 2 + 2 * (key[V[(opcode >> 8) & 0x000F]]);
 				break;
 				case 0x0001:
-					pc = pc + 2 + 2 * !(key[V[(opcode >> 8) & 0x000F]]);
+					pc += 2 + 2 * (!key[V[(opcode >> 8) & 0x000F]]);
 				break;
 			}
 		break;
@@ -250,7 +253,7 @@ void chip8::decode(unsigned short opcode) {
 					pc += 2;
 				break;
 				case 0x001E:
-					V[0xF] = I + V[(opcode >> 8) & 0x000F];
+					V[0xF] = (I + V[(opcode >> 8) & 0x000F] > 0xFFF);
 					I += V[(opcode >> 8) & 0x000F];
 					pc += 2;
 				break;
@@ -265,23 +268,36 @@ void chip8::decode(unsigned short opcode) {
 					pc += 2;
 				break;
 				case 0x0055:
-					for (int x = 0; x < (opcode >> 8) & 0x000F + 1; x++) {
+					for (int x = 0; x < ((opcode >> 8) & 0x000F) + 1; x++) {
 						memory[I + x] = V[x];
 					}
-					I += (opcode >> 8) & 0x000F + 1;
+					I += ((opcode >> 8) & 0x000F) + 1;
 					pc += 2;
 				break;
 				case 0x0065:
-					for (int x = 0; x < (opcode >> 8) & 0x000F + 1; x++) {
-						V[(opcode >> 8) & 0x000F + x] = memory[I + x];
+					for (int x = 0; x < ((opcode >> 8) & 0x000F) + 1; x++) {
+						V[x] = memory[I + x];
 					}
-					I += (opcode >> 8) & 0x000F + 1; 
+					I += ((opcode >> 8) & 0x000F) + 1;
 					pc += 2;
 				break;
 			}
 		break;
 		default:
-			printf("Uknown opcode.\n");
+			printf("Uknown opcode. ~F %X\n", opcode);
 	}
 }
 	
+void chip8::debugRender()
+{
+	for(int y = 0; y < 32; ++y) {
+		for(int x = 0; x < 64; ++x) {
+			if (!gfx[(y * 64) + x]) 
+				printf("O");
+			else 
+				printf(" ");
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
